@@ -1,0 +1,67 @@
+<mxfile host="Electron" agent="Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/24.7.17 Chrome/128.0.6613.36 Electron/32.0.1 Safari/537.36" version="24.7.17">
+  <diagram name="Page-1" id="9DRxS0tI9Z6Q0nDlWKCh">
+    <mxGraphModel dx="888" dy="540" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="FAQ75oF9_W0ucFF3LA8f-22" value="Kódolt adat" style="rounded=0;whiteSpace=wrap;html=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="610" y="250" width="130" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="FAQ75oF9_W0ucFF3LA8f-3" value="Kódolt karakterek hossza&lt;div&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;(1-256)&lt;/span&gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="250" width="150" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="FAQ75oF9_W0ucFF3LA8f-4" value="" style="rounded=0;whiteSpace=wrap;html=1;align=center;" vertex="1" parent="1">
+          <mxGeometry x="270" y="250" width="340" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="FAQ75oF9_W0ucFF3LA8f-5" value="karakter&lt;div&gt;&lt;span style=&quot;background-color: initial;&quot;&gt;ASCII&lt;/span&gt;&lt;br&gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="280" y="280" width="70" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="FAQ75oF9_W0ucFF3LA8f-6" value="kód" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="430" y="280" width="70" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="FAQ75oF9_W0ucFF3LA8f-7" value="" style="endArrow=none;dashed=1;html=1;dashPattern=1 3;strokeWidth=4;rounded=0;entryX=0.586;entryY=0.571;entryDx=0;entryDy=0;entryPerimeter=0;exitX=0.759;exitY=0.571;exitDx=0;exitDy=0;exitPerimeter=0;" edge="1" parent="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="589.3900000000001" y="301.93999999999994" as="sourcePoint" />
+            <mxPoint x="515" y="301.93999999999994" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="FAQ75oF9_W0ucFF3LA8f-9" value="Illeszkedés hossza&lt;div&gt;(&lt;span style=&quot;background-color: initial;&quot;&gt;0-7)&lt;/span&gt;&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="190" y="250" width="80" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="FAQ75oF9_W0ucFF3LA8f-10" value="Illeszkedés&lt;div&gt;(0)&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="740" y="250" width="80" height="90" as="geometry" />
+        </mxCell>
+        <mxCell id="FAQ75oF9_W0ucFF3LA8f-12" value="Kódtábla" style="text;html=1;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="1">
+          <mxGeometry x="270" y="250" width="340" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="FAQ75oF9_W0ucFF3LA8f-14" value="karakterkód&lt;div&gt;hosszza&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="350" y="280" width="80" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="FAQ75oF9_W0ucFF3LA8f-15" value="l = 8 bit" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="340" width="150" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="FAQ75oF9_W0ucFF3LA8f-16" value="i = 3 bit" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="190" y="340" width="80" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="FAQ75oF9_W0ucFF3LA8f-17" value="legalább l * (8 + 8 + 1) bit" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="270" y="340" width="340" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="FAQ75oF9_W0ucFF3LA8f-18" value="8 bit" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="280" y="310" width="70" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="FAQ75oF9_W0ucFF3LA8f-19" value="n = 8 bit" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="350" y="310" width="80" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="FAQ75oF9_W0ucFF3LA8f-20" value="n bit" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="430" y="310" width="70" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="FAQ75oF9_W0ucFF3LA8f-23" value="legalább l bit" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="610" y="340" width="130" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="FAQ75oF9_W0ucFF3LA8f-24" value="i bit" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="740" y="340" width="80" height="20" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

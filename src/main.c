@@ -1,76 +1,158 @@
+// ================================== Headers ==================================
+
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
+#include <getopt.h>
+#include <stdbool.h>
+
+#include "./debug.h"
+
+#include "cla.c"
 #include "./encoder.c"
 #include "./decoder.c"
 
-enum mode {
+// ================================== Structs ==================================
+
+/// @brief Megadja, hogy a program a 'kodol' vagy 'dekodol' paraméterrel lett
+///        meghívva
+enum MODE {
     ENCODE = 0,
-    DECODE = 1
+    DECODE = 1,
+    UNSET = -1
 };
-typedef struct parsedArguments {
-    enum mode m;
-    char* input;
-    char* output;
-} parsedArguments;
 
-int parseArgs(int argc, char** argv, parsedArguments *args);
+// ============================ Function prototypes ============================
 
+void printHelp();
+int parseCLA(int argc, char** argv, commandLineArguments *args, enum MODE *mode);
+
+// ================================== Program ==================================
+
+
+//TODO stderr
+//TODO check each buff_write for error
 int main(int argc, char** argv) {
+    commandLineArguments args;
+    enum MODE mode = UNSET;
 
-    parsedArguments args;
-    if(parseArgs(argc, argv, &args) != 0){
-        printf("Hasznalat: shanon <kodol|dekodol> <bemeneti fajl> <kimeneti fajl>\n");
-        return 0;
-    }
-    
-    FILE *infile = fopen(args.input, args.m == ENCODE ? "r" : "rb");
-    if(infile == NULL){
-        printf("Nem sikerult megnyitni a fajlt:  %s\n", args.input);
-        return 1;
-    }
-    FILE *outfile = fopen(args.output, args.m == ENCODE ? "wb" : "w");
-    if(infile == NULL){
-        printf("Nem sikerult megnyitni a fajlt: %s\n", args.output);
-        return 1;
+    if(parseCLA(argc, argv, &args, &mode) != 0){
+        return -1;
     }
 
-    if(args.m == ENCODE){
-        encode(infile, outfile);
+    int returnCode = 0;
+    if(mode == ENCODE){
+        returnCode = encode(args);
     }else{
-        decode(infile, outfile);
+        returnCode = decode(args);
     }
 
-    fclose(infile);
-    fclose(outfile);
+    if(args.infile != stdin){
+        fclose(args.infile);
+    }
+    if(args.outfile != stdout){
+        fclose(args.outfile);
+    }
 
-    return 0;
+    return returnCode;
 }
 
-// huffman tömörítés 
-// dekódoló
+// ================================= Functions =================================
 
-// karakterkészlet - számok / ascii
+void printHelp(){
+    printf(
+        "program [üzemmód] <...kapcsolók...>\n"
+        "Üzemmód: kodol, dekodol\n"
+        "Kapcsolók:\n"
+        "--bemenet <forrásfájl>: Bemeneti fájl (ha üres akkor stdin)\n"
+        "--kimenet <célfájl>: Bemeneti fájl (ha üres akkor stdout)\n"
+        "--kodtabla <fájl>: A kódtábla fájl (kötelező)\n"
+        "--statisztika: A tömörítés hatékonyságát értékelő statisztika (opcionális)\n"
+        "--help: Ezt az üzenetet írja ki (opcionális)\n"
+    );
+}
 
-// kódolás mértéke
-
-
-// kódolt szöveg --> mivel lett kódolva (vissza lehet-e állítani a kódtáblát)
-
-int parseArgs(int argc, char** argv, parsedArguments *args){
-    if(argc <= 3) {
-        return -1;
-    }
-
-    if(strcmp(argv[1], "kodol") == 0) {
-        args->m = ENCODE;
-    } else if(strcmp(argv[1], "dekodol") == 0) {
-        args->m = DECODE;
-    }else {
-        return -1;
-    }
-
-    args->input = argv[2];
-    args->output = argv[3];
+/// @brief A bemeneti paraméterek feldolgozására szolgáló függvény
+/// @param argc 'argv' hossza 
+/// @param argv parancssori argumentumok
+/// @param args 
+/// @return 0, ha sikeres volt az argumentumok elemzése, különben ettől eltérő
+//          érték
+int parseCLA(int argc, char** argv, commandLineArguments *args, enum MODE *mode){
+    args->displayStatistics = false;
+    args->displayTable = false;
+    *mode = UNSET;
     
+    static struct option long_options[] = {
+        {"bemenet", required_argument, NULL, 'i'},
+        {"kimenet", required_argument, NULL, 'o'},
+        {"kodtabla", no_argument, NULL, 't'},
+        {"statisztika", no_argument, NULL, 's'},
+        {"help", no_argument, NULL, 'h'},
+        {NULL, 0, NULL, '\0'}
+    };
+
+    char* infile = "";
+    char* outfile = "";
+
+
+    //Processing flags
+    char ch;
+    while ((ch = getopt_long_only(argc, argv, "i:o:ts", long_options, NULL)) != -1) {
+    switch (ch) {
+        case 'i': infile = optarg; break;
+        case 'o': outfile = optarg; break;
+        case 't': args->displayTable = true; break;
+        case 's': args->displayStatistics = true; break;
+        case 'h': printHelp(); return -1;
+        default: break;
+        }
+    }
+
+    //Unprocessed args
+    while(optind < argc){
+        if(strcmp(argv[optind], "kodol") == 0) {
+            *mode = ENCODE;
+        } else if(strcmp(argv[optind], "dekodol") == 0) {
+            *mode = DECODE;
+        }else {
+            printf("Ismeretlen paraméter: %s\n", argv[optind]);
+            return -1;
+        }
+        optind++;
+    }
+
+    if(*mode == UNSET){
+        printf("Mód nincs beállítva\n");
+        return -1;
+    }
+
+    FILE *in;
+    if(*infile == '\0'){
+        printf("Bemenet kapcsoló nincs beállítva, alapértelmezett érték: 'stdin'\n");
+        in = stdin;
+    }else{
+        in = fopen(infile, "rb+");
+        if(in == NULL){
+            printf("Nem sikerult megnyitni a fajlt:  %s\n", infile);
+            return -1;
+        }
+    }
+    
+    FILE *out;
+    if(*outfile == '\0'){
+        printf("Kimenet kapcsoló nincs beállítva, alapértelmezett érték: 'stdin'\n");
+        out = stdin;
+    }else{
+        out = fopen(outfile, "wb+");
+        if(out == NULL){
+            printf("Nem sikerult megnyitni a fajlt:  %s\n", outfile);
+            return -1;
+        }
+    }
+
+    args->infile = in;
+    args->outfile = out;
+
     return 0;
 }

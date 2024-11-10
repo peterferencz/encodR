@@ -2,96 +2,163 @@
 #include <stdlib.h>
 #include <math.h>
 
+#include "cla.c"
+#include "fileBuffer.c"
 #include "codeword.c"
 #include "bin.c"
 
+#include "./debug.h"
+
 typedef struct codewordFrequency{
     float freq;
-    codeWord codeWord;
+    CodeWord codeWord;
 } codewordFrequency;
 
 
-void setCode(codewordFrequency codes[], int i, int j);
-char* getCode(codewordFrequency code[], int codesLength, char toEncode);
-char* binToString(int bin, int length);
-void wBinToString(char* str, int bin, int length);
-void wBinToArr(unsigned char to[], int offset, int bin, int length);
-unsigned char* constructHeader(codewordFrequency codes[], char codesLength, int *headerLength);
+void setCodeWord(codewordFrequency codes[], int i, int j);
+Bits codewordToBits(codewordFrequency code[], int codesLength, uchar find);
 
 int compare_by_freq(const void *a, const void *b){
     return ((codewordFrequency *) b)->freq - ((codewordFrequency *) a)->freq;
 }
 int compare_by_bitlength(const void *a, const void *b){
-    return ((codewordFrequency *) a)->codeWord.bitsLength - ((codewordFrequency *) b)->codeWord.bitsLength;
+    return ((codewordFrequency *) a)->codeWord.bits.length - ((codewordFrequency *) b)->codeWord.bits.length;
 }
 
-int encode(FILE *in, FILE *out){
+int encode(commandLineArguments args){
+    const int MAX_CHARS = 256;
+
+    //Tömb inicializálása az összes lehetséges karakterrel
+    codewordFrequency *frequencies = malloc(sizeof(codewordFrequency) * MAX_CHARS);
+    if(frequencies == NULL){
+        PRINTDEBUG_MALLOCNULL();
+        return -1;
+    }
     
-    //presume ony characters fitting into a char
-    const int size = 256;
-    
-    //Init array
-    codewordFrequency frequencies[size];
-    for(int i = 0; i < size; i++){
+    for(int i = 0; i < MAX_CHARS; i++){
         frequencies[i] = (codewordFrequency){
             .freq = 0,
-            .codeWord = (codeWord){
-                .codeWord = (char) i,
-                .bits = 0,
-                .bitsLength = 0
+            .codeWord = (CodeWord){
+                .codeWord = i,
+                .bits = (Bits) {
+                    .b = 0,
+                    .length = 0
+                }
             }
         };
     }
     
     
-    char c;
-    int totalCharacters = 0;
-    while((c = fgetc(in)) != EOF){
-        frequencies[(int)c].freq += 1;
+    InputFileBuffer inputBuffer = buff_createInputFileBuffer(args.infile);
+    
+    
+    //TODO we may overflow
+    unsigned int totalCharacters = 0;
+
+    //TODO read codeword with addbits
+    Bits bits = buff_readChar(inputBuffer);
+    while(!isNullbit(bits)){
+        frequencies[bits.b].freq += 1;
         totalCharacters++;
+        bits = buff_readChar(inputBuffer);
     }
 
-    qsort(frequencies, size, sizeof(codewordFrequency), compare_by_freq);
+    qsort(frequencies, MAX_CHARS, sizeof(codewordFrequency), compare_by_freq);
 
-    char distinctCodeWords = 0;
-    while(frequencies[(int)distinctCodeWords].freq != 0){
+    int distinctCodeWords = 0;
+    while(frequencies[distinctCodeWords].freq != 0){
         distinctCodeWords++;
     }
+
+
+    OutputFileBuffer outputBuffer = buff_createOutputFileBuffer(args.outfile);
+    buff_writeChar(outputBuffer, distinctCodeWords -1); //see documentation
+
+    //Shrink not needed elements
+    frequencies = realloc(frequencies, sizeof(codewordFrequency) * distinctCodeWords);
+    if(frequencies == NULL){
+        PRINTDEBUG_MALLOCNULL();
+        return 1;
+    }
+
     for(int i = 0; i < distinctCodeWords; i++){
         frequencies[i].freq /= totalCharacters;
     }
-
-    setCode(frequencies, 0, distinctCodeWords-1);
-
-    int headerLength = 0;
-    unsigned char* header = constructHeader(frequencies, distinctCodeWords, &headerLength);
+    setCodeWord(frequencies, 0, distinctCodeWords-1);
     
-    fwrite(header, 1, headerLength, out);
+    
+    // Store pos of padding
+    // fpos_t paddingPosInFile;
+    // fgetpos(outputBuffer.file, &paddingPosInFile);
+    buff_writeBits(outputBuffer, (Bits) {.b = 0, .length = 3});
 
-    return 0;
-
-    rewind(in);
-    while((c = fgetc(in)) != EOF){
-       char* code = getCode(frequencies, distinctCodeWords, c);
-       fprintf(out, "%s", code);
-       free(code);
-    }
-
-    fprintf(out, "\n");
+    if(args.displayTable && false){ printf("Kódtábla (%d elem):\n", distinctCodeWords); }
+    
     for(int i = 0; i < distinctCodeWords; i++){
-        char* str = getCode(frequencies, distinctCodeWords, frequencies[i].codeWord.codeWord);
-        fprintf(out, "%c: %4s -- %d, %d\n",frequencies[i].codeWord.codeWord, str, frequencies[i].codeWord.bits, frequencies[i].codeWord.bitsLength);
-        free(str);
+        buff_writeChar(outputBuffer, frequencies[i].codeWord.codeWord);
+        buff_writeChar(outputBuffer, (char)frequencies[i].codeWord.bits.length);
+        buff_writeBits(outputBuffer, frequencies[i].codeWord.bits);
+
+
+        // --kodtabla
+        if(args.displayTable && false){
+            printf("%c ",frequencies[i].codeWord.codeWord);
+            print_bits(frequencies[i].codeWord.bits);
+            printf("\n");
+        }
+    }
+    if(args.displayTable){ printf("\n"); }
+
+    buff_rewind(inputBuffer);
+    Bits c;
+    while(!isNullbit(c = buff_readChar(inputBuffer))){
+        buff_writeBits(outputBuffer, codewordToBits(frequencies, distinctCodeWords, (char) c.b));
     }
 
+    char padding = 8 - outputBuffer.bits->length;
+    buff_flush(outputBuffer);
+
+    //Write padding
+    fseek(outputBuffer.file, 1, SEEK_SET);
+    uchar original;
+    fread(&original, sizeof(char), 1, outputBuffer.file);
+    fseek(outputBuffer.file, 1, SEEK_SET);
+    uchar byte = (padding << 5) | (original & 0b00011111);
+    fwrite(&byte, sizeof(char), 1, outputBuffer.file);
+
+    free(frequencies);
+    buff_destroyInputFileBuffer(inputBuffer);
+    buff_destroyOutputFileBuffer(outputBuffer);
     return 0;
 }
 
 //j > i
 //codes[i] inclusive, codes[j] inclusive
-void setCode(codewordFrequency codes[], int i, int j){
+/// codewordFrequency --> SF-
+void setCodeWord(codewordFrequency codes[], int i, int j){
+    if(i == j){
+        bits_pushBit(&codes[i].codeWord.bits, (Bits){
+            .b = 0,
+            .length = 1
+        });
+        return;
+    }
+
+    if(i + 1 == j){
+        bits_pushBit(&codes[i].codeWord.bits, (Bits){
+            .b = 0,
+            .length = 1
+        });
+        bits_pushBit(&codes[j].codeWord.bits, (Bits){
+            .b = 1,
+            .length = 1
+        });
+
+        return;
+    }
+
     float _sum = 0;
-    for(int a = i; a < j; a++){
+    for(int a = i; a <= j; a++){
         _sum += codes[a].freq;
     }
 
@@ -111,93 +178,35 @@ void setCode(codewordFrequency codes[], int i, int j){
     //Found half-point of probabilies
     //[i-a]: 0; (a-j]: 1
     for(int a = i; a <= j; a++){
-        codes[a].codeWord.bits <<= 1;
-        codes[a].codeWord.bitsLength++;
-        if(a > halfPointIndex){
-            codes[a].codeWord.bits += 1;
-        }
+        bits_pushBit(&codes[a].codeWord.bits, (Bits){
+            .b = (a <= halfPointIndex) ? 0 : 1,
+            .length = 1
+        });
+        // codes[a].codeWord.bits.b <<= 1;
+        // codes[a].codeWord.bits.length++;
+        // if(a > halfPointIndex){
+        //     codes[a].codeWord.bits.b += 1;
+        // }
     }
 
-    if(i + 1 == j){
-        return;
-    }
+    
 
     if(halfPointIndex != i){
-        setCode(codes, i, halfPointIndex);
+        setCodeWord(codes, i, halfPointIndex);
     }
     if(j -1 != halfPointIndex){
-        setCode(codes, halfPointIndex + 1,j);
+        setCodeWord(codes, halfPointIndex + 1,j);
     }
 }
 
-
-//TODO codeslengt can only have char length
-//Source: https://stackoverflow.com/a/44978686/15444965 
-unsigned char* constructHeader(codewordFrequency codes[], char codesLength, int *headerLength){    
-    //                               | length of table            | codeword       | bitslength + bits(worst-case)
-    unsigned char *bits = malloc(sizeof(int) + codesLength * (sizeof(char) + sizeof(int) * 2));
-    unsigned int currentBit = 0;
-
-    // bits[currentByte] = codesLength;
-    wBinToArr(bits, currentBit, codesLength, sizeof(char)*8);
-    currentBit += sizeof(char)*8;
-
+//TODO make this with a graph
+Bits codewordToBits(codewordFrequency code[], int codesLength, uchar find){
     for(int i = 0; i < codesLength; i++){
-        // Write char
-        wBinToArr(bits, currentBit, codes[i].codeWord.codeWord, sizeof(codes[i].codeWord.codeWord)*8);
-        currentBit += sizeof(codes[i].codeWord.codeWord)*8;
-
-        // Write bits length
-        wBinToArr(bits, currentBit, codes[i].codeWord.bitsLength, sizeof(codes[i].codeWord.bitsLength)*8);
-        currentBit += sizeof(codes[i].codeWord.bitsLength)*8;
-
-        // Write bits
-        wBinToArr(bits, currentBit, codes[i].codeWord.bits, codes[i].codeWord.bitsLength);
-        currentBit += codes[i].codeWord.bitsLength;
-    }
-    
-    *headerLength = currentBit / 8;
-    return bits;
-}
-
-char* getCode(codewordFrequency code[], int codesLength, char toEncode){
-    for(int i = 0; i < codesLength; i++){
-        if(code[i].codeWord.codeWord != toEncode){ continue; }
-
-        return binToString(code[i].codeWord.bits, code[i].codeWord.bitsLength);
+        if(code[i].codeWord.codeWord != find){ continue; }
+        return code[i].codeWord.bits;
     }
 
-    return NULL;
-}
 
-//Caller's responsibility to free
-char* binToString(int bin, int length){
-    char* str = malloc(length+1);
-    wBinToString(str, bin, length);
-    str[length] = '\0';
-    return str;
-}
-
-
-
-/// @brief Write 'bin' bits to 'to' from a given 'offset'
-/// @param to 
-/// @param offset in bits
-/// @param bin 
-/// @param length 
-void wBinToArr(unsigned char to[], int offset, int bin, int length){
-    for(int i = 0; i < length; i++){
-        int shift = 8-1-(i%8)-(offset%8);
-        to[(i+offset)/8] = ((to[(i+offset)/8] >> shift) + getBitFromRight(bin, length, i)) << shift;
-    }
-}
-
-/// @brief 
-/// @param str 
-/// @param bin 
-/// @param length in bytes
-void wBinToString(char* str, int bin, int length){
-    for(int i = 0; i < length*8; i++){
-            str[i] = getBitFromRight(bin, length*8, i) ? '1' : '0';
-    }
+    PRINTDEBUG_CUSTOM("Karakter '%c' nincs benne a kódtáblában", find);
+    return NULLBIT;
 }

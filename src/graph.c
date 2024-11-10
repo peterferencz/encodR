@@ -4,7 +4,7 @@
 #include "codeword.c"
 
 typedef struct Node{
-    codeWord codeword;
+    char codeword;
 
     struct Node *left_0;
     struct Node *right_1;
