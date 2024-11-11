@@ -1,33 +1,45 @@
 #ifndef INCL_BUFFER
 #define INCL_BUFFER
 
+// ================================== Headers ==================================
+
 #include <stdlib.h>
 #include <stdbool.h>
 
+#include "./debug/debug.h"
 #include "bin.c"
 #include "codeword.c"
 
-// We read from file, but store the current char
-// we basically store 
+// ================================== Structs ==================================
+
+/// @brief Struktúra, mely lehetővé teszi a bitenkénti olvasást egy fájlból.
 typedef struct InputFileBuffer {
+    /// @brief A fájl, melyből olvasunk
     FILE *file;
 
-    uchar *currentBit; // [0,8), relative to 'file' head
+    /// @brief Megadja, hogy az adott fájl olvasásánál hanyadik bitnél tartunk.
+    /// Értéke 0 és 7 közötti.
+    uchar *currentBit;
 } InputFileBuffer;
 
+/// @brief Struktúra, mely lehetővé teszi a bitenkénti írást egy fájlba.
 typedef struct OutputFileBuffer {
+    /// @brief A fájl, melybe írunk
     FILE *file;
 
-    Bits *bits; // Bits not written to file l < 8
+    /// @brief A még nem a fájlba beírt bitek
+    Bits *bits;
 } OutputFileBuffer;
 
-// void buff_pushBit(FileBuffer buff, char bit, FILE *writeTo);
+// ================================= Functions =================================
 
+/// @brief 
+/// @param file Az olvasandó file stream-je
+/// @return A kreált puffer
 InputFileBuffer buff_createInputFileBuffer(FILE *file){
     uchar *cb = malloc(sizeof(uchar));
     if(cb == NULL){
         PRINTDEBUG_MALLOCNULL();
-        printf("Nem sikerült memóriát lefoglalni (%ld byte)\n", sizeof(int));
         exit(1); //TODO return with error rather than exit
     }
 
@@ -44,7 +56,7 @@ OutputFileBuffer buff_createOutputFileBuffer(FILE *file){
     Bits *bits = malloc(sizeof(Bits));
     if(bits == NULL){
         PRINTDEBUG_MALLOCNULL();
-        exit(1);
+        exit(1); //TODO return with error rather than exit
     }
 
     clearerr(file);
@@ -144,6 +156,7 @@ Bits buff_readBit(InputFileBuffer buff){
     ++*buff.currentBit;
 
     if(*buff.currentBit / 8 < 1){
+        //TODO Use stored char rather than seeking
         fseek(buff.file, -1, SEEK_CUR);
     }else{
         *buff.currentBit %= 8;

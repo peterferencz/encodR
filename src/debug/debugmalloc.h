@@ -1,6 +1,8 @@
 //This file was originally downloaded from Infoc (https://infoc.eet.bme.hu/debugmalloc/)
-// One modification was made to supress compiler options for -Werror=sign-compare
+// A modification was made to supress compiler options for -Werror=sign-compare
 // in function debugmalloc_malloc_full.
+//
+// debugmalloc_atexit_dump was also changed to visually improve the output
 
 #ifndef DEBUGMALLOC_H
 #define DEBUGMALLOC_H

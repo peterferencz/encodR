@@ -1,44 +1,3 @@
-\documentclass[12pt,a4paper]{report}
-
-\usepackage[hungarian]{babel}
-\usepackage{t1enc}
-\usepackage[a4paper,top=2cm,bottom=2cm,left=3cm,right=3cm,marginparwidth=1.75cm]{geometry}
-\usepackage{graphicx}
-\usepackage{changepage}
-\usepackage{array}
-\usepackage[nolabel]{showlabels}
-\usepackage{textpos} % textblock
-\usepackage{float} % figure
-
-% \usepackage{amsmath}
-% \usepackage{amssymb}
-\usepackage[colorlinks=true, allcolors=blue]{hyperref}
-% \usepackage{mwe}
-
-\graphicspath{ {./docs/res/} }
-
-\begin{document}
-
-\begin{titlepage}
-    \centering
-    \vspace{1cm}
-    {\Large \textsc{A programozás alapjai 1\\(BMEVIEEAA00, 2024/25/1)\\  Nagyházi feladat}\par}
-    \vspace{1.5cm}  
-    {\huge\bfseries Shanon-Fano kódoló és dekódoló program\par}
-    \vspace{2cm}
-    {\Large\itshape készítette: \par Ferencz Péter\par (RFG7SN)}
-    \vfill
-    % \includegraphics[totalheight=3cm]{VIK.png}\par
-    \includegraphics[totalheight=3cm]{BMEKicsi.png}\par
-    Budapesti Műszaki és Gazdaságtudományi Egyetem\par
-    Villamosmérnöki és Informatikai Kar\par
-    Mérnökinformatikus Bsc\par
-    {\large 2024 Október\par}
-\end{titlepage}
-
-\tableofcontents
-\newpage
-
 \chapter{Specifikáció}
 
 \section{A program célja}
@@ -97,7 +56,7 @@ Azt határozza meg, hogy a program kiírjon-e további számitásokat a program 
 Az alábbi számítások történnek kiírásra: \\
 \begin{itemize}
     \item Tömörítés mértéke: bemenet mérete a tömörített adat méretéhez képest
-    \item Kódtábal mérete: Elgymástól eltérő kódok száma
+    \item Kódtábal mérete: Egymástól eltérő kódok száma
     \item Kódok mérete: legrövidebb kód, leghosszabb kód, kódok átlagos mérete
     \item Fa mérete: A generált fa mérete
 \end{itemize}
@@ -135,41 +94,5 @@ Kódtábla, melynek minden eleme az alábbiakból épül fel:\\
 Kódolt adat
 
 \begin{figure}[H]
-    \centerline{\includegraphics[width=\linewidth]{docs/res/encodedfilecontents.png}}
+    \centerline{\includegraphics[width=\linewidth]{encodedfilecontents.png}}
 \end{figure}
-
-% \section{A kódolás menete}
-% C. E. Shannon, „A Mathematical Theory of Communication”, 1948
-% Robert M. Fano, „The Transmittion of Information”, 1949
-
-
-% \section{Kódolás folyamata}
-
-
-% \section{Dekódolás folyamata}
-
-% \chapter{minden más}
-
-% \section{Megszorítások}
-% A fájl értékei csak 0...255 értékeket vehetnek fel
-
-% \section{A fejlesztést segítő programok}
-% vscode \\
-% hexdump \\
-% xxd \\
-% du \\
-
-% C optimalizáció ki / be kapcsolása
-
-% \section{buffer.c}
-% The buffer holds 2 pointers, which enables it to be passed around as parameter
-% this implementation also allows for arbitrary sized inputs to be read and outputs to be written
-
-% \section{Felhasznált irodalom}
-% https://web.archive.org/web/19980715013250/http://cm.bell-labs.com/cm/ms/what/shannonday/shannon1948.pdf \\
-% https://hcs64.com/files/fano-tr65-ocr-only.pdf\\
-% \href{https://man7.org/linux/man-pages/index.html}{Linux man-pages project}\\
-% \href{https://infoc.eet.bme.hu/}{BME Infoc segédanyagok}\\
-
-
-\end{document}

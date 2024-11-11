@@ -6,7 +6,7 @@
 #include <getopt.h>
 #include <stdbool.h>
 
-#include "./debug.h"
+#include "./debug/debug.h"
 
 #include "cla.c"
 #include "./encoder.c"
@@ -28,7 +28,6 @@ void printHelp();
 int parseCLA(int argc, char** argv, commandLineArguments *args, enum MODE *mode);
 
 // ================================== Program ==================================
-
 
 //TODO stderr
 //TODO check each buff_write for error
@@ -141,7 +140,7 @@ int parseCLA(int argc, char** argv, commandLineArguments *args, enum MODE *mode)
     
     FILE *out;
     if(*outfile == '\0'){
-        printf("Kimenet kapcsoló nincs beállítva, alapértelmezett érték: 'stdin'\n");
+        printf("Kimenet kapcsoló nincs beállítva, alapértelmezett érték: 'stdout'\n");
         out = stdin;
     }else{
         out = fopen(outfile, "wb+");

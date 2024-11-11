@@ -1,19 +1,27 @@
+// ================================== Headers ==================================
 #include <stdio.h>
 #include <stdbool.h>
 
-#include "debug.h"
 
+#include "./debug/debug.h"
 #include "cla.c"
 #include "bin.c"
 #include "fileBuffer.c"
 #include "codeword.c"
 #include "graph.c"
 
-bool appendCodeword(Node *root, Bits codeword, char set);
+// ============================ Function prototypes ============================
+
+void appendCodeword(Node *root, Bits codeword, char set);
 Node *createNodeIfNotexists(Node *parent, int dir);
 Node *createNodeIfNotexists(Node *parent, int dir);
 void freeTree(Node *root);
 
+// ================================== Program ==================================
+
+/// @brief Dekódol egy Shanon-Fano algoritmussal kódolt fájlt
+/// @param args Parancssori bemenet, amely a dekódolás folyamatát módosítja
+/// @return 0, ha a dekódolás sikeres volt. Minden más érték sikertelen
 int decode(commandLineArguments args){
     InputFileBuffer inputBuffer = buff_createInputFileBuffer(args.infile);
 
@@ -142,19 +150,28 @@ int decode(commandLineArguments args){
     return 0;
 }
 
-bool appendCodeword(Node *root, Bits codeword, char set){
+// ================================= Functions =================================
+
+/// @brief Egy fagráfhoz, \p codeword bitjeinek bejárása alapján beállítja egy
+/// elem kódolt karakterét. Ha az adott elérés nem létezik, a függvény
+/// létrehozza azt.
+/// @param root A fagráf gyökere
+/// @param codeword A bejárás bitjei: 0 = bal, 1 (minden más) = jobb
+/// @param set A beállítandó karakter, melyhez elérkeztünk a bejárás végén
+void appendCodeword(Node *root, Bits codeword, char set){
     Node *current = root;
 
     for(int i = 0; i <  codeword.length; i++){
-        char c = getBitFromRight(codeword, i);
+        char c = getBitFromRight(codeword, i).b;
 
         current = createNodeIfNotexists(current, c);
     }
     current->codeword = set;
-
-    return true;
 }
 
+
+/// @brief Rekurzívan felszabadít egy fagráfot
+/// @param root a felszabadítandó gráf gyökere
 void freeTree(Node *root){
     if(root->left_0 != NULL){
         freeTree(root->left_0);
@@ -165,7 +182,11 @@ void freeTree(Node *root){
     free(root);
 }
 
-// 0 : left, 1 (default) : right
+/// @brief Egy fagráf adott eleméből megpróbál \p dir által meghatároott úton
+/// továbbhaladni. Ha az nem létezik, létrehozza azt.
+/// @param parent Az elem, melyből kiindulunk
+/// @param dir Az irány: 0 = bal, 1 (minden más) = jobb
+/// @return A gráf azon eleme, mely \p parent -től \p dir irányba helyezkedik el
 Node *createNodeIfNotexists(Node *parent, int dir){
     if(dir == 0){
         if(parent->left_0 == NULL){
@@ -194,71 +215,3 @@ Node *createNodeIfNotexists(Node *parent, int dir){
         return parent->right_1;
     }
 }
-
-// Node *constructTableFromFile(InputFileBuffer input) {
-//     InputFileBuffer tableFile = buff_createInputFileBuffer(file);
-    
-    
-
-//     int sor = 1;
-
-
-//     while(true){
-//         char cw;
-//         Bits read = buff_readChar(tableFile);
-//         if(isNullbit(read)){break;}
-//         cw = (char) read.b;
-//         if(cw == '\n') { //Double newline
-//             return root;
-//         }
-
-//         //Szóköz
-//         read = buff_readChar(tableFile);
-//         if(isNullbit(read)){
-//             PRINTDEBUG_CUSTOM("Nem jó formátumú kódtábla (befejezetlen a %d. sor)", sor);
-//             return NULL;
-//         }
-//         char separator = (char) read.b;
-//         if(separator != ' '){
-//             PRINTDEBUG_CUSTOM("Nem szóköz választja el a karaktert a kódjától (%d.sor)", sor);
-//             return NULL;
-//         }
-        
-//         Node *current = root;
-//         bool nlfound = false;
-
-//         while(!nlfound){
-//             read = buff_readChar(tableFile);
-//             if(isNullbit(read)){
-//                 PRINTDEBUG_CUSTOM("Nem jó formátumú kódtábla (befejezetlen a %d. sor)", sor);
-//                 return NULL;
-//             }
-//             char c = (char)read.b;
-            
-//             switch(c){
-//                 case '0':
-//                     current = createNodeIfNotexists(current, 0);
-//                     break;
-//                 case '1':
-//                     current = createNodeIfNotexists(current, 1);
-//                     break;
-//                 case '\n':
-//                     if(current == root){
-//                         PRINTDEBUG_CUSTOM("Nem jó formátumú kódtábla (befejezetlen a %d. sor)", sor);
-//                         return NULL;
-//                     }
-
-//                     current->codeword = cw;
-//                     sor++;
-//                     nlfound = true;
-//                     break;
-//                 default:
-//                     PRINTDEBUG_CUSTOM("Nem megengedett karakter '%c' a kódtáblában (%d.sor)", (char)read.b, sor);
-//                     return NULL;
-//             }
-//         }
-//     }
-//     return root;
-// }
-
-

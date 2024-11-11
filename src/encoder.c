@@ -1,3 +1,5 @@
+// ================================== Headers ==================================
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -7,24 +9,27 @@
 #include "codeword.c"
 #include "bin.c"
 
-#include "./debug.h"
+#include "./debug/debug.h"
+
+// ================================== Structs ==================================
 
 typedef struct codewordFrequency{
     float freq;
     CodeWord codeWord;
 } codewordFrequency;
 
+// ============================ Function prototypes ============================
 
 void setCodeWord(codewordFrequency codes[], int i, int j);
 Bits codewordToBits(codewordFrequency code[], int codesLength, uchar find);
+int compare_by_freq(const void *a, const void *b);
+int compare_by_bitlength(const void *a, const void *b);
 
-int compare_by_freq(const void *a, const void *b){
-    return ((codewordFrequency *) b)->freq - ((codewordFrequency *) a)->freq;
-}
-int compare_by_bitlength(const void *a, const void *b){
-    return ((codewordFrequency *) a)->codeWord.bits.length - ((codewordFrequency *) b)->codeWord.bits.length;
-}
+// ================================== Program ==================================
 
+/// @brief Kódol Shanon-Fano algoritmus alkalmazásával egy fájlt
+/// @param args Parancssori bemenet, amely a dekódolás folyamatát módosítja
+/// @return 0, ha a dekódolás sikeres volt. Minden más érték sikertelen
 int encode(commandLineArguments args){
     const int MAX_CHARS = 256;
 
@@ -86,10 +91,6 @@ int encode(commandLineArguments args){
     }
     setCodeWord(frequencies, 0, distinctCodeWords-1);
     
-    
-    // Store pos of padding
-    // fpos_t paddingPosInFile;
-    // fgetpos(outputBuffer.file, &paddingPosInFile);
     buff_writeBits(outputBuffer, (Bits) {.b = 0, .length = 3});
 
     if(args.displayTable && false){ printf("Kódtábla (%d elem):\n", distinctCodeWords); }
@@ -132,9 +133,14 @@ int encode(commandLineArguments args){
     return 0;
 }
 
-//j > i
-//codes[i] inclusive, codes[j] inclusive
-/// codewordFrequency --> SF-
+
+// ================================= Functions =================================
+
+/// @brief Rekurzívan beállítja egy kód tömbön az adott karakter Shanon-Fano
+/// algoritmus szerinti kódját
+/// @param codes A kódtömb
+/// @param i A tömb kezdeti indexe (inkluzív)
+/// @param j A tömb vegső indexe (inkluzív)
 void setCodeWord(codewordFrequency codes[], int i, int j){
     if(i == j){
         bits_pushBit(&codes[i].codeWord.bits, (Bits){
@@ -182,14 +188,7 @@ void setCodeWord(codewordFrequency codes[], int i, int j){
             .b = (a <= halfPointIndex) ? 0 : 1,
             .length = 1
         });
-        // codes[a].codeWord.bits.b <<= 1;
-        // codes[a].codeWord.bits.length++;
-        // if(a > halfPointIndex){
-        //     codes[a].codeWord.bits.b += 1;
-        // }
     }
-
-    
 
     if(halfPointIndex != i){
         setCodeWord(codes, i, halfPointIndex);
@@ -200,6 +199,12 @@ void setCodeWord(codewordFrequency codes[], int i, int j){
 }
 
 //TODO make this with a graph
+
+/// @brief Megkeresi \p code tömbben, \p find karaktert
+/// @param code A kódtömb
+/// @param codesLength A kódtömb hossza
+/// @param find A keresett karakter
+/// @return A keresett kódolás vagy NULLBIT
 Bits codewordToBits(codewordFrequency code[], int codesLength, uchar find){
     for(int i = 0; i < codesLength; i++){
         if(code[i].codeWord.codeWord != find){ continue; }
@@ -209,4 +214,22 @@ Bits codewordToBits(codewordFrequency code[], int codesLength, uchar find){
 
     PRINTDEBUG_CUSTOM("Karakter '%c' nincs benne a kódtáblában", find);
     return NULLBIT;
+}
+
+/// @brief Frekvenciájuk alapján összehasonlít 2 frekvenciával rendelkező 
+/// karakterkódolást
+/// @param a Az összehasonlítandó karakterkódolás
+/// @param b Az összehasonlítandó karakterkódolás
+/// @return 0 = egyeznek, >0 = \p b frekvenciája nagyobb, <0 \p a 
+/// frekvenciája nagyobb
+int compare_by_freq(const void *a, const void *b){
+    return ((codewordFrequency *) b)->freq - ((codewordFrequency *) a)->freq;
+}
+
+/// @brief Kódolásuk hossza alapján összehasonlít 2 rendelkező karakterkódolást
+/// @param a Az összehasonlítandó karakterkódolás
+/// @param b Az összehasonlítandó karakterkódolás
+/// @return 0 = egyeznek, >0 = \p a kódja hosszabb, <0 \p b kódja hosszabb
+int compare_by_bitlength(const void *a, const void *b){
+    return ((codewordFrequency *) a)->codeWord.bits.length - ((codewordFrequency *) b)->codeWord.bits.length;
 }

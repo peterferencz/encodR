@@ -1,19 +1,22 @@
 #ifndef INCL_DEBUG
 #define INCL_DEBUG
 
-#ifdef DEBUG
-    // #include "debugmalloc.h"
-#endif
 
-
-//Define debug print macros
 #ifndef DEBUG
+/// @brief Kiírja hogy egy memóriafoglalás sikertelen volt.
 #define PRINTDEBUG_MALLOCNULL() ;;
+/// @brief Kiírja, hogy a fájlművelet sikertelen volt.
 #define PRINTDEBUG_FILEERR();;
+/// @brief Kiírja, hogy dekódolás közben nem várt karakterrel találkoztnk.
 #define PRINTDEBUG_CORRUPTEDFILE() ;;
+/// @brief Általános hibakeresésre használható, konzolra való kiírásra alkalmas.
 #define PRINTDEBUG_CUSTOM(str, ...) ;;
 #endif
+
+
 #ifdef DEBUG
+#include "./debug/debugmalloc.h"
+
 #define PRINTDEBUG_MALLOCNULL() printf("[DEBUG] Malloc returned with null in function '%s' (file %s, line %d)\n", __FUNCTION__, __FILE__, __LINE__);
 #define PRINTDEBUG_FILEERR() printf("[DEBUG] Error flag was set while doing file operations in function '%s' (file %s, line %d)\n", __FUNCTION__, __FILE__, __LINE__);
 #define PRINTDEBUG_CORRUPTEDFILE() printf("[DEBUG] Invalid or corrupted file found in function '%s' (file %s, line %d)\n", __FUNCTION__, __FILE__, __LINE__);

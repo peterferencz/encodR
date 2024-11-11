@@ -149,27 +149,47 @@
 \usepackage{etoc}
 \etocsettocstyle{\doxytocparskip}{\doxynormalparskip}
 \renewcommand{\numberline}[1]{#1~}
+
+
+% Custom packages
+\usepackage{t1enc}
+\usepackage{changepage}
+% \usepackage[nolabel]{showlabels}
+% Textblock
+\usepackage{textpos}
+% Figure
+\usepackage{float}
+
+
+
+
 %===== C O N T E N T S =====
 
 \begin{document}
 \raggedbottom
 
 % Titlepage & ToC
-\hypersetup{pageanchor=false, bookmarksnumbered=true, pdfencoding=unicode }
+\hypersetup{
+  pageanchor=false,
+  bookmarksnumbered=true,
+  pdfencoding=unicode
+  }
 \pagenumbering{alph}
 
 % \section{Specifikáció}
 % This is where I yap.
 % TODO why doesn't this work?
 
+\graphicspath{ {../res/} }
 
-
-ékajfésdj
+\input {./../additional/front.tex}
 
 \pagenumbering{roman}
 \tableofcontents
 \newpage
 \pagenumbering{arabic}
 \hypersetup{pageanchor=true}
+
+\input {./../additional/specification.tex}
 
 %--- Begin generated contents ---
