@@ -17,38 +17,52 @@ DEBUGFLAGS := -g -ggdb -D DEBUG
 # 	${CC} ${CFLAGS} ${DEBUGFLAGS} ./src/main.c -o ./out/debugbin
 
 SRCPATH := src
+HEADERPATH := lib
 OUTPATH := out
 
 SOURCEFILES := $(wildcard $(SRCPATH)/*.c)
 OBJECTFILES := $(patsubst $(SRCPATH)/%.c, $(OUTPATH)/obj/%.o, $(SOURCEFILES))
 
+# Generate object files
 $(OUTPATH)/obj/%.o : $(SRCPATH)/%.c
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) -I$(HEADERPATH) $(CFLAGS) -c $< -o $@
 
+# Link object files
 $(OUTPATH)/bin: $(OBJECTFILES)
 	$(CC) $(OBJECTFILES) -o $(OUTPATH)/bin
 
 .PHONY: build
 build: $(OUTPATH)/bin
 
-# ./docs/Documentation.pdf: Doxyfile
-# 	doxygen Doxyfile
-# 	cd ./docs/working
-# 	$(MAKE) -C ./docs/working
-# 	cp ./docs/working/refman.pdf ./docs/Documentation.pdf
+.PHONY: clean
+clean:
+	rm ./out/obj/*.o
+	rm ./out/bin
+	rm -r ./docs/working
 
-# encode:
-# 	./out/bin kodol --bemenet ./out/test.txt --kimenet ./out/encoded --kodtabla --statisztika
+.PHONY: docs
+docs: ./docs/Documentation.pdf
+
+./docs/Documentation.pdf: Doxyfile
+	doxygen Doxyfile
+	cd ./docs/working
+	$(MAKE) -C ./docs/working
+	cp ./docs/working/refman.pdf ./docs/Documentation.pdf
+
+.PHONY: encode
+encode:
+	./out/bin kodol --bemenet ./out/test.txt --kimenet ./out/encoded --kodtabla --statisztika
 # 	echo
 # 	xxd -b ./out/encoded | (head ; echo ; tail)
 # 	du --summarize --human-readable ./out/encoded
 
-# decode:
-# 	./out/bin dekodol --bemenet ./out/encoded --kimenet ./out/decoded.txt --kodtabla --statisztika
-# 	echo
-# 	cat ./out/decoded.txt
-# 	echo
-# 	diff -q ./out/test.txt ./out/decoded.txt
+.PHONY: decode
+decode:
+	./out/bin dekodol --bemenet ./out/encoded --kimenet ./out/decoded.txt --kodtabla --statisztika
+#	echo
+#	cat ./out/decoded.txt
+#	echo
+#	diff -q ./out/test.txt ./out/decoded.txt
 
 # test:
 # 	rm ./out/random.data

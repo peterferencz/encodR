@@ -1,35 +1,4 @@
-#ifndef INCL_BUFFER
-#define INCL_BUFFER
-
-// ================================== Headers ==================================
-
-#include <stdlib.h>
-#include <stdbool.h>
-
-#include "./debug/debug.h"
-#include "bin.c"
-#include "codeword.c"
-
-// ================================== Structs ==================================
-
-/// @brief Struktúra, mely lehetővé teszi a bitenkénti olvasást egy fájlból.
-typedef struct InputFileBuffer {
-    /// @brief A fájl, melyből olvasunk
-    FILE *file;
-
-    /// @brief Megadja, hogy az adott fájl olvasásánál hanyadik bitnél tartunk.
-    /// Értéke 0 és 7 közötti.
-    uchar *currentBit;
-} InputFileBuffer;
-
-/// @brief Struktúra, mely lehetővé teszi a bitenkénti írást egy fájlba.
-typedef struct OutputFileBuffer {
-    /// @brief A fájl, melybe írunk
-    FILE *file;
-
-    /// @brief A még nem a fájlba beírt bitek
-    Bits *bits;
-} OutputFileBuffer;
+#include "fileBuffer.h"
 
 // ================================= Functions =================================
 
@@ -193,6 +162,3 @@ Bits buff_readChar(InputFileBuffer buff){
 Bits buff_readInt(InputFileBuffer buff){
     return buff_readBits(buff, sizeof(int)*8);
 }
-
-
-#endif

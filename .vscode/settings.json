@@ -1,6 +1,10 @@
 {
     "files.associations": {
         "stdlib.h": "c",
-        "debug.h": "c"
-    }
+        "debug.h": "c",
+        "encoder.h": "c",
+        "filebuffer.h": "c",
+        "decoder.h": "c"
+    },
+    "C_Cpp.default.configurationProvider": "ms-vscode.makefile-tools"
 }

@@ -1,8 +1,4 @@
-#ifndef INCL_BIN
-#define INCL_BIN
-
-#include <stdio.h>
-#include "codeword.c"
+#include "bin.h"
 
 
 /// @brief Adott bitsorozatnak megadja a jobról számított \p n -edik bitjét
@@ -33,7 +29,3 @@ void print_bits(Bits bits){
         printf("%c", (bits.b >> (i-1)) & 1 ? '1' : '0');
     }
 }
-
-
-
-#endif

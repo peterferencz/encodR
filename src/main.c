@@ -1,26 +1,4 @@
-// ================================== Headers ==================================
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <getopt.h>
-#include <stdbool.h>
-
-#include "./debug/debug.h"
-
-#include "cla.c"
-#include "./encoder.c"
-#include "./decoder.c"
-
-// ================================== Structs ==================================
-
-/// @brief Megadja, hogy a program a 'kodol' vagy 'dekodol' paraméterrel lett
-///        meghívva
-enum MODE {
-    ENCODE = 0,
-    DECODE = 1,
-    UNSET = -1
-};
+#include "main.h"
 
 // ============================ Function prototypes ============================
 

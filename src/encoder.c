@@ -1,22 +1,4 @@
-// ================================== Headers ==================================
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
-
-#include "cla.c"
-#include "fileBuffer.c"
-#include "codeword.c"
-#include "bin.c"
-
-#include "./debug/debug.h"
-
-// ================================== Structs ==================================
-
-typedef struct codewordFrequency{
-    float freq;
-    CodeWord codeWord;
-} codewordFrequency;
+#include "encoder.h"
 
 // ============================ Function prototypes ============================
 

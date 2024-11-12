@@ -1,14 +1,4 @@
-// ================================== Headers ==================================
-#include <stdio.h>
-#include <stdbool.h>
-
-
-#include "./debug/debug.h"
-#include "cla.c"
-#include "bin.c"
-#include "fileBuffer.c"
-#include "codeword.c"
-#include "graph.c"
+#include "decoder.h"
 
 // ============================ Function prototypes ============================
 
