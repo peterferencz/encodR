@@ -4,7 +4,7 @@
 
 void appendCodeword(Node *root, Bits codeword, char set);
 Node *createNodeIfNotexists(Node *parent, int dir);
-Node *createNodeIfNotexists(Node *parent, int dir);
+void displayTable(Node *root, Bits *_path);
 void freeTree(Node *root);
 
 // ================================== Program ==================================
@@ -16,7 +16,7 @@ int decode(commandLineArguments args){
     InputFileBuffer inputBuffer = buff_createInputFileBuffer(args.infile);
 
     Bits btableLength = buff_readChar(inputBuffer);
-    if(isNullbit(btableLength)){
+    if(bits_isNullbit(btableLength)){
         PRINTDEBUG_CORRUPTEDFILE()
         return -1;
     }
@@ -24,7 +24,7 @@ int decode(commandLineArguments args){
     int tableLength = (int) btableLength.b + 1;
 
     Bits bpaddingLength = buff_readBits(inputBuffer, 3);
-    if(isNullbit(bpaddingLength)){
+    if(bits_isNullbit(bpaddingLength)){
         PRINTDEBUG_CORRUPTEDFILE()
         return -1;
     }
@@ -35,32 +35,32 @@ int decode(commandLineArguments args){
     }
 
     Node *root = malloc(sizeof(Node));
-    if(root == NULL){
-        PRINTDEBUG_MALLOCNULL();
-        return -1;
-    }
+    PRINTDEBUG_CUSTOM("MALLOC: %p", root);
+    CHECKMALLOCNULL(root);
+
     root->left_0 = NULL;
     root->right_1 = NULL;
+    root->set = false;
     root->codeword = '\0';
 
 
     for(int i = 0; i < tableLength; i++){
         Bits cb = buff_readChar(inputBuffer);
-        if(isNullbit(cb)){
+        if(bits_isNullbit(cb)){
             PRINTDEBUG_CORRUPTEDFILE()
             return -1;
         }
         char c = (char)cb.b;
 
         Bits lb = buff_readChar(inputBuffer);
-        if(isNullbit(lb)){
+        if(bits_isNullbit(lb)){
             PRINTDEBUG_CORRUPTEDFILE()
             return -1;
         }
         char l = (char)lb.b;
 
         Bits codeb = buff_readBits(inputBuffer, l);
-        if(isNullbit(codeb)){
+        if(bits_isNullbit(codeb)){
             PRINTDEBUG_CORRUPTEDFILE()
             return -1;
         }
@@ -70,7 +70,7 @@ int decode(commandLineArguments args){
 
 
     if(args.displayTable){
-        //TODO display table
+        stats_printCodetableTree(root);
     }
 
     OutputFileBuffer outputBuffer = buff_createOutputFileBuffer(args.outfile);
@@ -81,7 +81,7 @@ int decode(commandLineArguments args){
 
     Bits bit;
     Node *current = root;
-    while(!isNullbit(bit = buff_readBit(inputBuffer))){
+    while(!bits_isNullbit(bit = buff_readBit(inputBuffer))){
         char dir = bit.b;
 
         if(dir){
@@ -124,15 +124,12 @@ int decode(commandLineArguments args){
     }
     zeroDepth--;
     
-    int extraCharCount = padding / zeroDepth + (padding % zeroDepth != 0); // +1 due to writing out last
-    // rotBufi = (rotBufi + 7) % 8;
+    int extraCharCount = padding / zeroDepth + (padding % zeroDepth != 0);
     int n = (rotBufFilled ? 8 : rotBufi) - extraCharCount;
     for(int i = 0; i < n; i++){
         buff_writeChar(outputBuffer, rotBuf[rotBufFilled ? rotBufi : i]);
-        // rotBuf[rotBufi] = current->codeword;
         rotBufi = (rotBufi + 1) % 8;
     }
-    
 
     freeTree(root);
     buff_destroyInputFileBuffer(inputBuffer);
@@ -157,19 +154,7 @@ void appendCodeword(Node *root, Bits codeword, char set){
         current = createNodeIfNotexists(current, c);
     }
     current->codeword = set;
-}
-
-
-/// @brief Rekurzívan felszabadít egy fagráfot
-/// @param root a felszabadítandó gráf gyökere
-void freeTree(Node *root){
-    if(root->left_0 != NULL){
-        freeTree(root->left_0);
-    }
-    if(root->right_1 != NULL){
-        freeTree(root->right_1);
-    }
-    free(root);
+    current->set = true;
 }
 
 /// @brief Egy fagráf adott eleméből megpróbál \p dir által meghatároott úton
@@ -181,27 +166,24 @@ Node *createNodeIfNotexists(Node *parent, int dir){
     if(dir == 0){
         if(parent->left_0 == NULL){
             Node *new = malloc(sizeof(Node));
-            if(new == NULL){
-                PRINTDEBUG_MALLOCNULL();
-                return NULL;
-            }
+            CHECKMALLOCNULL(new);
             new->left_0 = NULL;
             new->right_1 = NULL;
             new->codeword = '\0';
+            new->set = false;
             parent->left_0 = new;
         }
         return parent->left_0;
     }else{
         if(parent->right_1 == NULL){
             Node *new = malloc(sizeof(Node));
-            if(new == NULL){
-                PRINTDEBUG_MALLOCNULL();
-                return NULL;
-            }
+            CHECKMALLOCNULL(new);
             new->left_0 = NULL;
             new->right_1 = NULL;
+            new->set = false;
             parent->right_1 = new;
         }
         return parent->right_1;
     }
 }
+

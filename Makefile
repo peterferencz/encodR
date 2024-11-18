@@ -1,20 +1,13 @@
+BUILD := debug # use make BUILD=release
 CC := gcc
+
+# Setup c flags based on BUILD
 CFLAGS := -lm -Wall -Werror
-DEBUGFLAGS := -g -ggdb -D DEBUG
-
-# .SILENT: build debug encode decode docs test
-# .PHONY: build debug docs encode decode clean zip
-# .DEFAULT: build
-
-# build: ./out/bin
-# debug: ./out/debugbin
-# docs: ./docs/Documentation.pdf
-
-# ./out/bin: $(wildcard ./src/*.c)
-# 	${CC} ${CFLAGS} ./src/main.c -o ./out/bin
-
-# ./out/debugbin: $(wildcard ./src/*.c) $(wildcard ./src/debug/*)
-# 	${CC} ${CFLAGS} ${DEBUGFLAGS} ./src/main.c -o ./out/debugbin
+ifeq ($(BUILD),release)
+    CFLAGS += -O2
+else
+    CFLAGS +=  -g -ggdb -O0 -D DEBUG
+endif
 
 SRCPATH := src
 HEADERPATH := lib
@@ -22,6 +15,7 @@ OUTPATH := out
 
 SOURCEFILES := $(wildcard $(SRCPATH)/*.c)
 OBJECTFILES := $(patsubst $(SRCPATH)/%.c, $(OUTPATH)/obj/%.o, $(SOURCEFILES))
+HEADERFILES := $(wildcard $(HEADERPATH)/*.h)
 
 # Generate object files
 $(OUTPATH)/obj/%.o : $(SRCPATH)/%.c
@@ -35,15 +29,18 @@ $(OUTPATH)/bin: $(OBJECTFILES)
 build: $(OUTPATH)/bin
 
 .PHONY: clean
-clean:
+clean: FORCE
+# c object files
 	rm ./out/obj/*.o
 	rm ./out/bin
+# doxygen files
+	$(MAKE) -C ./docs/working clean
 	rm -r ./docs/working
 
 .PHONY: docs
 docs: ./docs/Documentation.pdf
 
-./docs/Documentation.pdf: Doxyfile
+./docs/Documentation.pdf: FORCE
 	doxygen Doxyfile
 	cd ./docs/working
 	$(MAKE) -C ./docs/working
@@ -64,16 +61,15 @@ decode:
 #	echo
 #	diff -q ./out/test.txt ./out/decoded.txt
 
-# test:
-# 	rm ./out/random.data
-# 	head -c 100000 < /dev/urandom > ./out/random.data
-# 	./out/bin kodol --bemenet ./out/random.data --kimenet ./out/encoded
-# 	./out/bin dekodol --bemenet ./out/encoded --kimenet ./out/decoded.txt
-# 	diff -q ./out/random.data ./out/decoded.txt
-# 	echo "Test passed!"
+FORCE: ;
 
-# clean:
-# 	$(MAKE) -C ./docs/working clean
-# 	rm -r ./docs/working
+.PHONY: test
+test:
+	rm ./out/random.data
+	head -c 100000 < /dev/urandom > ./out/random.data
+	./out/bin kodol --bemenet ./out/random.data --kimenet ./out/encoded
+	./out/bin dekodol --bemenet ./out/encoded --kimenet ./out/decoded.txt
+	diff -q ./out/random.data ./out/decoded.txt
+	echo "Test passed!"
 
 # zip: ./docs/Documentation.pdf ./src/*

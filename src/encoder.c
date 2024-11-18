@@ -17,10 +17,7 @@ int encode(commandLineArguments args){
 
     //Tömb inicializálása az összes lehetséges karakterrel
     codewordFrequency *frequencies = malloc(sizeof(codewordFrequency) * MAX_CHARS);
-    if(frequencies == NULL){
-        PRINTDEBUG_MALLOCNULL();
-        return -1;
-    }
+    CHECKMALLOCNULL(frequencies);
     
     for(int i = 0; i < MAX_CHARS; i++){
         frequencies[i] = (codewordFrequency){
@@ -44,7 +41,7 @@ int encode(commandLineArguments args){
 
     //TODO read codeword with addbits
     Bits bits = buff_readChar(inputBuffer);
-    while(!isNullbit(bits)){
+    while(!bits_isNullbit(bits)){
         frequencies[bits.b].freq += 1;
         totalCharacters++;
         bits = buff_readChar(inputBuffer);
@@ -63,38 +60,42 @@ int encode(commandLineArguments args){
 
     //Shrink not needed elements
     frequencies = realloc(frequencies, sizeof(codewordFrequency) * distinctCodeWords);
-    if(frequencies == NULL){
-        PRINTDEBUG_MALLOCNULL();
-        return 1;
-    }
+    CHECKMALLOCNULL(frequencies);
 
     for(int i = 0; i < distinctCodeWords; i++){
         frequencies[i].freq /= totalCharacters;
     }
     setCodeWord(frequencies, 0, distinctCodeWords-1);
     
+    // Write padding bits (placeholder)
     buff_writeBits(outputBuffer, (Bits) {.b = 0, .length = 3});
 
-    if(args.displayTable && false){ printf("Kódtábla (%d elem):\n", distinctCodeWords); }
+    if(args.displayTable || args.displayStatistics){
+        CodeWord *array = malloc(sizeof(CodeWord) * distinctCodeWords);
+        CHECKMALLOCNULL(array);
+        for(int i = 0; i < distinctCodeWords; i++){
+            array[i] = frequencies[i].codeWord;
+        }
+
+        if(args.displayTable){
+            stats_printCodetableArray(array, distinctCodeWords);
+        }
+        if(args.displayStatistics){
+            stats_printCodetableStatsArray(array, distinctCodeWords);
+        }
+        
+        free(array);
+    }
     
     for(int i = 0; i < distinctCodeWords; i++){
         buff_writeChar(outputBuffer, frequencies[i].codeWord.codeWord);
         buff_writeChar(outputBuffer, (char)frequencies[i].codeWord.bits.length);
         buff_writeBits(outputBuffer, frequencies[i].codeWord.bits);
-
-
-        // --kodtabla
-        if(args.displayTable && false){
-            printf("%c ",frequencies[i].codeWord.codeWord);
-            print_bits(frequencies[i].codeWord.bits);
-            printf("\n");
-        }
     }
-    if(args.displayTable){ printf("\n"); }
 
     buff_rewind(inputBuffer);
     Bits c;
-    while(!isNullbit(c = buff_readChar(inputBuffer))){
+    while(!bits_isNullbit(c = buff_readChar(inputBuffer))){
         buff_writeBits(outputBuffer, codewordToBits(frequencies, distinctCodeWords, (char) c.b));
     }
 
@@ -115,7 +116,6 @@ int encode(commandLineArguments args){
     return 0;
 }
 
-
 // ================================= Functions =================================
 
 /// @brief Rekurzívan beállítja egy kód tömbön az adott karakter Shanon-Fano
@@ -125,22 +125,13 @@ int encode(commandLineArguments args){
 /// @param j A tömb vegső indexe (inkluzív)
 void setCodeWord(codewordFrequency codes[], int i, int j){
     if(i == j){
-        bits_pushBit(&codes[i].codeWord.bits, (Bits){
-            .b = 0,
-            .length = 1
-        });
+        bits_pushBit(&codes[i].codeWord.bits, 0);
         return;
     }
 
     if(i + 1 == j){
-        bits_pushBit(&codes[i].codeWord.bits, (Bits){
-            .b = 0,
-            .length = 1
-        });
-        bits_pushBit(&codes[j].codeWord.bits, (Bits){
-            .b = 1,
-            .length = 1
-        });
+        bits_pushBit(&codes[i].codeWord.bits, 0);
+        bits_pushBit(&codes[j].codeWord.bits, 1);
 
         return;
     }
@@ -166,10 +157,7 @@ void setCodeWord(codewordFrequency codes[], int i, int j){
     //Found half-point of probabilies
     //[i-a]: 0; (a-j]: 1
     for(int a = i; a <= j; a++){
-        bits_pushBit(&codes[a].codeWord.bits, (Bits){
-            .b = (a <= halfPointIndex) ? 0 : 1,
-            .length = 1
-        });
+        bits_pushBit(&codes[a].codeWord.bits, (a <= halfPointIndex) ? 0 : 1);
     }
 
     if(halfPointIndex != i){
@@ -179,8 +167,6 @@ void setCodeWord(codewordFrequency codes[], int i, int j){
         setCodeWord(codes, halfPointIndex + 1,j);
     }
 }
-
-//TODO make this with a graph
 
 /// @brief Megkeresi \p code tömbben, \p find karaktert
 /// @param code A kódtömb

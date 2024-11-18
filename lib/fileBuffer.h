@@ -5,6 +5,7 @@
 
 #include <stdlib.h>
 #include <stdbool.h>
+#include <stdio.h>
 
 #include "debug/debug.h"
 #include "bin.h"
@@ -33,8 +34,8 @@ typedef struct OutputFileBuffer {
 
 // ============================ Function prototypes ============================
 
-InputFileBuffer buff_createInputFileBuffer(FILE *file);
-OutputFileBuffer buff_createOutputFileBuffer(FILE *file);
+InputFileBuffer buff_createInputFileBuffer(const char *path);
+OutputFileBuffer buff_createOutputFileBuffer(const char *path);
 
 void buff_destroyInputFileBuffer(InputFileBuffer buffer);
 void buff_destroyOutputFileBuffer(OutputFileBuffer buffer);

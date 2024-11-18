@@ -16,8 +16,12 @@
 
 // ================================== Structs ==================================
 
+/// @brief Kódolt szót és annak a szövegben előfordulásának gyakoriságát
+/// eltároló struktúra
 typedef struct codewordFrequency{
+    /// @brief Az adott kódolt szó előfordulásának frekvenciája
     float freq;
+    /// @brief Kódolt szó
     CodeWord codeWord;
 } codewordFrequency;
 

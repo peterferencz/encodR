@@ -2,6 +2,7 @@
 #define INCL_DECODER
 
 // ================================== Headers ==================================
+
 #include <stdio.h>
 #include <stdbool.h>
 

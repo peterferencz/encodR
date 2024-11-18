@@ -1,6 +1,9 @@
 #ifndef INCL_DEBUG
 #define INCL_DEBUG
 
+/// @brief Megnézi, hogy ptr NULL-e. Ha igen, akkor kilép a programból 1es
+/// értékkel, különben nem változtatja meg a futást
+#define CHECKMALLOCNULL(ptr) if(ptr == NULL) { PRINTDEBUG_MALLOCNULL(); exit(1); }
 
 #ifndef DEBUG
 /// @brief Kiírja hogy egy memóriafoglalás sikertelen volt.

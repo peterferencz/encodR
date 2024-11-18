@@ -2,13 +2,16 @@
 
 // ================================= Functions =================================
 
-/// @brief 
-/// @param file Az olvasandó file stream-je
-/// @return A kreált puffer
-InputFileBuffer buff_createInputFileBuffer(FILE *file){
+/// @brief Készít egy bitek olvasására alkalmas puffert
+/// @param path A fájl elérési útvonala
+/// @return Az elkészített puffer
+InputFileBuffer buff_createInputFileBuffer(const char *path){
     uchar *cb = malloc(sizeof(uchar));
-    if(cb == NULL){
-        PRINTDEBUG_MALLOCNULL();
+    CHECKMALLOCNULL(cb);
+
+    FILE *file = fopen(path, "rb+");
+    if(file == NULL){
+        PRINTDEBUG_FILEERR();
         exit(1); //TODO return with error rather than exit
     }
 
@@ -21,10 +24,16 @@ InputFileBuffer buff_createInputFileBuffer(FILE *file){
     };
 }
 
-OutputFileBuffer buff_createOutputFileBuffer(FILE *file){
+/// @brief Készít egy bitek írására alkalmas puffert
+/// @param path A fájl elérési útvonala
+/// @return Az elkészített puffer
+OutputFileBuffer buff_createOutputFileBuffer(const char *path){
     Bits *bits = malloc(sizeof(Bits));
-    if(bits == NULL){
-        PRINTDEBUG_MALLOCNULL();
+    CHECKMALLOCNULL(bits);
+
+    FILE *file = fopen(path, "wb+");
+    if(file == NULL){
+        PRINTDEBUG_FILEERR();
         exit(1); //TODO return with error rather than exit
     }
 
@@ -37,28 +46,40 @@ OutputFileBuffer buff_createOutputFileBuffer(FILE *file){
     };
 }
 
-//Does not close file
+/// @brief Bezárja a puffer által megynyitott fájlt, és felszabadítja az az
+/// által lefoglalt memóriát
+/// @param buffer A felszabadítandó puffer
 void buff_destroyInputFileBuffer(InputFileBuffer buffer){
     free(buffer.currentBit);
     buffer.currentBit = NULL;
+    fclose(buffer.file);
 }
 
-//Does not close file
+/// @brief Bezárja a puffer által megynyitott fájlt, és felszabadítja az az
+/// által lefoglalt memóriát
+/// @param buffer A felszabadítandó puffer
 void buff_destroyOutputFileBuffer(OutputFileBuffer buffer){
     free(buffer.bits);
     buffer.bits = NULL;
+    fclose(buffer.file);
 }
 
-
+/// @brief A fájl újboli olvasására készíti fel a puffer
+/// @param buffer A visszahízandó puffer
 void buff_rewind(InputFileBuffer buffer){
     rewind(buffer.file);
     *buffer.currentBit = 0;
 }
 
-//0: ok, other(1): ferror
+// ================================== Writing ==================================
+
+/// @brief Egy fájlba ír biteket
+/// @param buff A puffer, melybe írunk
+/// @param bit Egy tetszőleges hosszúságú bitsorozat
+/// @return 'false', ha sikeres a művelet, különben 'true'
 bool buff_writeBits(OutputFileBuffer buff, Bits bit){
     
-    bits_pushBit(buff.bits, bit);
+    bits_pushBits(buff.bits, bit);
 
 
     if(buff.bits->length >= 8){
@@ -68,7 +89,7 @@ bool buff_writeBits(OutputFileBuffer buff, Bits bit){
 
         if(ferror(buff.file) != 0){
             PRINTDEBUG_FILEERR();
-            return 1;
+            return true;
         }
 
         int mask = (1 << r) - 1;
@@ -77,9 +98,14 @@ bool buff_writeBits(OutputFileBuffer buff, Bits bit){
             .length = r
         };
     }
-    return 0;
+    return false;
 }
 
+/// @brief Egy fájlba ír 1 bitet
+/// @param buff A puffer, melybe írunk
+/// @param bit A beírandó bit. Hogyha a bitsorozat hossza nem 1, akkor a
+// függvény úgy funkcionál, mint \ref{buff_writeBits}
+/// @return 'false', ha sikeres a művelet, különben 'true'
 bool buff_writeBit(OutputFileBuffer buff, Bits bit){
     #ifdef DEBUG
     if(bit.length != 1){
@@ -89,14 +115,25 @@ bool buff_writeBit(OutputFileBuffer buff, Bits bit){
     return buff_writeBits(buff, bit);
 }
 
+/// @brief Egy fájlba ír 1 karaktert
+/// @param buff A puffer, melybe írunk
+/// @param val A beírandó érték
+/// @return 'false', ha sikeres a művelet, különben 'true'
 bool buff_writeChar(OutputFileBuffer buff, uchar val){
     return buff_writeBits(buff, (Bits){.b = val, .length = 8 * sizeof(uchar)});
 }
 
+/// @brief Egy fájlba ír 1 egész számot
+/// @param buff A puffer, melybe írunk
+/// @param val A beírandó érték
+/// @return 'false', ha sikeres a művelet, különben 'true'
 bool buff_writeInt(OutputFileBuffer buff, int val){
     return buff_writeBits(buff, (Bits){.b = val, .length = 8 * sizeof(int)});
 }
 
+/// @brief Beírja a fájlba a puffer tartalmát, 0val kiegészítve
+/// @param buff A puffer, melybe írunk
+/// @return 'false', ha sikeres a művelet, különben 'true'
 bool buff_flush(OutputFileBuffer buff){
     if(buff.bits->length == 0) { return true; }
     int remaining = 8 - buff.bits->length;
@@ -107,10 +144,14 @@ bool buff_flush(OutputFileBuffer buff){
     });
 }
 
-//TODO read from
-// ret NULLBIT if EOF or ERR
+// ================================== Reading ==================================
+
+/// @brief Egy fálból olvas 1 bitet
+/// @param buff A puffer, amiből olvasunk
+/// @return #NULLBIT, ha EOF vagy fájl olvasási hiba lépett fell, különben az
+/// olvasott bit
 Bits buff_readBit(InputFileBuffer buff){
-    uchar data = '\0';
+    uchar data = 0;
     if(fread(&data, 1, 1, buff.file) == 0){
         if(feof(buff.file) != 0){
             return NULLBIT;
@@ -137,6 +178,10 @@ Bits buff_readBit(InputFileBuffer buff){
     };
 }
 
+/// @brief Egy fálból olvas \p bitCount darab bitet
+/// @param buff A puffer, amiből olvasunk
+/// @param bitCount Hány darab bitet olvassunk
+/// @return A beolvasott bitsorozat
 Bits buff_readBits(InputFileBuffer buff, int bitCount){
     Bits b = { .b = 0, .length = 0 };
 
@@ -144,9 +189,9 @@ Bits buff_readBits(InputFileBuffer buff, int bitCount){
 
     while(bitsRead < bitCount){
         Bits bit = buff_readBit(buff);
-        if(isNullbit(bit)){ return NULLBIT; }
+        if(bits_isNullbit(bit)){ return NULLBIT; }
         
-        bits_pushBit(&b, bit);
+        bits_pushBits(&b, bit);
 
         ++bitsRead;
     }
@@ -154,11 +199,16 @@ Bits buff_readBits(InputFileBuffer buff, int bitCount){
     return b;
 }
 
-//We need to keep this bits for NULLBIT / EOF to work
+/// @brief Egy fálból olvas 1 karaktert
+/// @param buff A puffer, amiből olvasunk
+/// @return A beolvasott karakter
 Bits buff_readChar(InputFileBuffer buff){
     return buff_readBits(buff, 8);
 }
 
+/// @brief Egy fálból olvas 1 egész számot
+/// @param buff A puffer, amiből olvasunk
+/// @return A beolvasott szám
 Bits buff_readInt(InputFileBuffer buff){
     return buff_readBits(buff, sizeof(int)*8);
 }

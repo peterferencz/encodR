@@ -4,7 +4,12 @@
         "debug.h": "c",
         "encoder.h": "c",
         "filebuffer.h": "c",
-        "decoder.h": "c"
+        "decoder.h": "c",
+        "graph.h": "c",
+        "main.h": "c",
+        "bin.h": "c",
+        "codeword.h": "c",
+        "stats.h": "c"
     },
     "C_Cpp.default.configurationProvider": "ms-vscode.makefile-tools"
 }
