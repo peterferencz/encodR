@@ -1,5 +1,4 @@
-#ifndef INCL_MAIN
-#define INCL_MAIN
+#pragma once
 
 // ================================== Headers ==================================
 
@@ -41,7 +40,3 @@ typedef struct commandLineArguments {
 
 #include "encoder.h"
 #include "decoder.h"
-
-
-
-#endif

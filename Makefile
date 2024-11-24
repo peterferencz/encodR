@@ -17,30 +17,39 @@ SOURCEFILES := $(wildcard $(SRCPATH)/*.c)
 OBJECTFILES := $(patsubst $(SRCPATH)/%.c, $(OUTPATH)/obj/%.o, $(SOURCEFILES))
 HEADERFILES := $(wildcard $(HEADERPATH)/*.h)
 
+dir_guard=@mkdir -p $(@D)
+
 # Generate object files
 $(OUTPATH)/obj/%.o : $(SRCPATH)/%.c
+	$(dir_guard)
 	$(CC) -I$(HEADERPATH) $(CFLAGS) -c $< -o $@
 
 # Link object files
-$(OUTPATH)/bin: $(OBJECTFILES)
-	$(CC) $(OBJECTFILES) -o $(OUTPATH)/bin
+$(OUTPATH)/encodr: $(OBJECTFILES)
+	$(CC) $(OBJECTFILES) -o $(OUTPATH)/encodr
 
 .PHONY: build
-build: $(OUTPATH)/bin
+build: $(OUTPATH)/encodr
 
 .PHONY: clean
 clean: FORCE
 # c object files
 	rm ./out/obj/*.o
-	rm ./out/bin
+	rm ./out/encodr
 # doxygen files
 	$(MAKE) -C ./docs/working clean
 	rm -r ./docs/working
 
 .PHONY: docs
-docs: ./docs/Documentation.pdf
+docs: ./docs/Documentation.pdf ./docs/Usermanual.pdf
 
-./docs/Documentation.pdf: FORCE
+./docs/Usermanual.pdf: ./docs/standalone/userman.tex
+	$(dir_guard)
+	pdflatex -halt-on-error -output-directory=./docs/working ./docs/standalone/userman.tex
+	cp ./docs/working/userman.pdf ./docs/Usermanual.pdf
+
+./docs/Documentation.pdf:
+	$(dir_guard)
 	doxygen Doxyfile
 	cd ./docs/working
 	$(MAKE) -C ./docs/working
@@ -48,14 +57,14 @@ docs: ./docs/Documentation.pdf
 
 .PHONY: encode
 encode:
-	./out/bin kodol --bemenet ./out/test.txt --kimenet ./out/encoded --kodtabla --statisztika
+	./out/encodr kodol --bemenet ./out/test.txt --kimenet ./out/encoded --kodtabla --statisztika
 # 	echo
 # 	xxd -b ./out/encoded | (head ; echo ; tail)
 # 	du --summarize --human-readable ./out/encoded
 
 .PHONY: decode
 decode:
-	./out/bin dekodol --bemenet ./out/encoded --kimenet ./out/decoded.txt --kodtabla --statisztika
+	./out/encodr dekodol --bemenet ./out/encoded --kimenet ./out/decoded.txt --kodtabla --statisztika
 #	echo
 #	cat ./out/decoded.txt
 #	echo
@@ -67,9 +76,7 @@ FORCE: ;
 test:
 	rm ./out/random.data
 	head -c 100000 < /dev/urandom > ./out/random.data
-	./out/bin kodol --bemenet ./out/random.data --kimenet ./out/encoded
-	./out/bin dekodol --bemenet ./out/encoded --kimenet ./out/decoded.txt
+	./out/encodr kodol --bemenet ./out/random.data --kimenet ./out/encoded
+	./out/encodr dekodol --bemenet ./out/encoded --kimenet ./out/decoded.txt
 	diff -q ./out/random.data ./out/decoded.txt
 	echo "Test passed!"
-
-# zip: ./docs/Documentation.pdf ./src/*

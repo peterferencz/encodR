@@ -1,5 +1,4 @@
-#ifndef INCL_BUFFER
-#define INCL_BUFFER
+#pragma once
 
 // ================================== Headers ==================================
 
@@ -52,5 +51,3 @@ Bits buff_readBit(InputFileBuffer buff);
 Bits buff_readBits(InputFileBuffer buff, int bitCount);
 Bits buff_readChar(InputFileBuffer buff);
 Bits buff_readInt(InputFileBuffer buff);
-
-#endif

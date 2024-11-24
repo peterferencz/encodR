@@ -1,5 +1,4 @@
-#ifndef INCL_CODEWORD
-#define INCL_CODEWORD
+#pragma once
 
 // ================================== Headers ==================================
 
@@ -22,5 +21,3 @@ typedef struct CodeWord{
     /// \a codeWord kódolt változata
     Bits bits;
 } CodeWord;
-
-#endif

@@ -1,5 +1,4 @@
-#ifndef INCL_DECODER
-#define INCL_DECODER
+#pragma once
 
 // ================================== Headers ==================================
 
@@ -17,5 +16,3 @@
 // ============================ Function prototypes ============================
 
 int decode(commandLineArguments args);
-
-#endif

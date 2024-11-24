@@ -1,5 +1,4 @@
-#ifndef INCL_BIN
-#define INCL_BIN
+#pragma once
 
 // ================================== Headers ==================================
 
@@ -37,6 +36,3 @@ void bits_print(Bits bits);
 
 bool bits_equ(Bits b1, Bits b2);
 bool bits_isNullbit(Bits b);
-
-
-#endif

@@ -1,5 +1,4 @@
-#ifndef INCL_ENCODER
-#define INCL_ENCODER
+#pragma once
 
 // ================================== Headers ==================================
 
@@ -28,5 +27,3 @@ typedef struct codewordFrequency{
 // ============================ Function prototypes ============================
 
 int encode(commandLineArguments args);
-
-#endif

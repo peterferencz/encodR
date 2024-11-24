@@ -1,5 +1,4 @@
-#ifndef INCL_GRAPH
-#define INCL_GRAPH
+#pragma once
 
 // ================================== Headers ==================================
 
@@ -23,5 +22,3 @@ typedef struct Node{
 
 int graph_countLeaves(Node *root);
 void freeTree(Node *root);
-
-#endif

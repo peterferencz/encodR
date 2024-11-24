@@ -9,7 +9,12 @@ InputFileBuffer buff_createInputFileBuffer(const char *path){
     uchar *cb = malloc(sizeof(uchar));
     CHECKMALLOCNULL(cb);
 
-    FILE *file = fopen(path, "rb+");
+    FILE *file;
+    if(strcmp(path, "stdin") == 0){
+        file = stdin;
+    }else{
+        file = fopen(path, "rb+");
+    }
     if(file == NULL){
         PRINTDEBUG_FILEERR();
         exit(1); //TODO return with error rather than exit
@@ -31,7 +36,12 @@ OutputFileBuffer buff_createOutputFileBuffer(const char *path){
     Bits *bits = malloc(sizeof(Bits));
     CHECKMALLOCNULL(bits);
 
-    FILE *file = fopen(path, "wb+");
+    FILE *file;
+    if(strcmp(path, "stdout") == 0){
+        file = stdout;
+    }else{
+        file = fopen(path, "wb+");
+    }
     if(file == NULL){
         PRINTDEBUG_FILEERR();
         exit(1); //TODO return with error rather than exit

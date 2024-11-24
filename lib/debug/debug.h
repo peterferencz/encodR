@@ -1,5 +1,4 @@
-#ifndef INCL_DEBUG
-#define INCL_DEBUG
+#pragma once
 
 /// @brief Megnézi, hogy ptr NULL-e. Ha igen, akkor kilép a programból 1es
 /// értékkel, különben nem változtatja meg a futást
@@ -24,8 +23,4 @@
 #define PRINTDEBUG_FILEERR() printf("[DEBUG] Error flag was set while doing file operations in function '%s' (file %s, line %d)\n", __FUNCTION__, __FILE__, __LINE__);
 #define PRINTDEBUG_CORRUPTEDFILE() printf("[DEBUG] Invalid or corrupted file found in function '%s' (file %s, line %d)\n", __FUNCTION__, __FILE__, __LINE__);
 #define PRINTDEBUG_CUSTOM(str, ...) printf("[DEBUG] " #str "[file %s, line: %d, function: %s]\n", __VA_ARGS__, __FILE__, __LINE__, __FUNCTION__);
-#endif
-
-
-
 #endif

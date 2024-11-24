@@ -9,7 +9,7 @@ alkalmazza.
 
 \section{Felhasználói interakció}
 A felhasználó két üzemmódot választhat ki a program futtatásakor: kódolás vagy dekódolás. Ezeket az első parancssori argumentumban a 
-'kodol' és 'dekodol' kulcsszavakkal tudja kiválasztani.
+'kodol' és 'dekodol' kulcsszavakkal tudja kiválasztani. Nem felismert üzemmód esetén a program kilép nem 0 hibakóddal.
 \subsection{kódolás (kodol)}
 \label{sec:encode}
 Kódoló üzemmódban a bemenetet (lásd \nameref{ssec:in}) a Shanon-Fano kódoló algoritmust alkalmazva írja a kimenetre (lásd \nameref{ssec:out}) a kódolt adatot.
@@ -18,7 +18,7 @@ Kódoló üzemmódban a bemenetet (lásd \nameref{ssec:in}) a Shanon-Fano kódol
 \end{verbatim}
 \subsection{dekódolás (dekodol)}
 \label{sec:decode}
-Dekódoló üzemmódban a bemenetet (lásd \nameref{ssec:in}) a Shanon-Fano dekódoló algoritmust alkalmazva írja a kimenetre (lásd \nameref{ssec:out}) a dekódolt adatot.
+Dekódoló üzemmódban a bemenetet (lásd \nameref{ssec:in}) a program által kódolt adatot állítja vissza eredeti állapotára és írja ki a kimenetre (lásd \nameref{ssec:out}).
 \begin{verbatim}
     program dekodol --bemenet <fájl> --kimenet <fájl>
 \end{verbatim}
@@ -34,7 +34,7 @@ Parancssori megnevezés: \texttt{-{}-bemenet <forrásfájl>} \\
 {\it Opcionális paraméter.}\\
 Ha nincs megadva, de a program egy figyelmeztető üzenet kíséretében folytatja a lefutást. \\
 A fájl méretétől és tartalmától független a program lefutása. \\
-Az azt követő paraméter megadja a forrásfájl elérési útvonalát. Ha nincs megadva, stdin-ról kér be új sorral lezárt szöveget.
+Az azt követő paraméter megadja a forrásfájl elérési útvonalát. Ha nincs megadva, stdin-ról olvas.
 
 \subsection{Kimenet}
 \label{ssec:out}
@@ -67,14 +67,14 @@ A felhasználót tájékoztatja a program helyes használatáról. Ha ez a kapcs
 a többi kötelező kapcsoló jelenlétét, kiírja a szöveget majd kódolás / dekódolás nélkül befejezi a futást.\\
 Az alábbi szöveg íródik ki: \\
 \begin{verbatim}    
-    program [üzemmód] <...kapcsolók...>
+    encodr [üzemmód] <...kapcsolók...>
     Üzemmód: kodol, dekodol
-    Kapcsolók:
+    Opcionális kapcsolók:
     --bemenet <forrásfájl>: Bemeneti fájl (ha üres akkor stdin)
     --kimenet <célfájl>: Bemeneti fájl (ha üres akkor stdout)
-    --kodtabla <fájl>: A kódtábla fájl (kötelező)
-    --statisztika: A tömörítés hatékonyságát értékelő statisztika (opcionális)
-    --help: Ezt az üzenetet írja ki (opcionális)
+    --kodtabla <fájl>: Kiírja-e a program a kódtáblát
+    --statisztika: A tömörítés hatékonyságára vonatkozó statisztika
+    --help: Ezt az üzenetet írja ki
 \end{verbatim}
 
 

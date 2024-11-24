@@ -39,14 +39,14 @@ int main(int argc, char** argv) {
 /// kapcsolókat
 void printHelp(){
     printf(
-        "program [üzemmód] <...kapcsolók...>\n"
+        "encodr [üzemmód] <...kapcsolók...>\n"
         "Üzemmód: kodol, dekodol\n"
-        "Kapcsolók:\n"
+        "Opcionális kapcsolók:\n"
         "--bemenet <forrásfájl>: Bemeneti fájl (ha üres akkor stdin)\n"
         "--kimenet <célfájl>: Bemeneti fájl (ha üres akkor stdout)\n"
-        "--kodtabla <fájl>: A kódtábla fájl (kötelező)\n"
-        "--statisztika: A tömörítés hatékonyságát értékelő statisztika (opcionális)\n"
-        "--help: Ezt az üzenetet írja ki (opcionális)\n"
+        "--kodtabla <fájl>: Kiírja-e a program a kódtáblát\n"
+        "--statisztika: A tömörítés hatékonyságára vonatkozó statisztika\n"
+        "--help: Ezt az üzenetet írja ki\n"
     );
 }
 
@@ -74,8 +74,8 @@ int parseCLA(int argc, char** argv, commandLineArguments *args){
         {NULL, 0, NULL, '\0'}
     };
 
-    char* infile = "";
-    char* outfile = "";
+    char* infile = "stdin";
+    char* outfile = "stdout";
 
 
     //Processing flags
